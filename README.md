@@ -4,7 +4,7 @@ A CLI-based decision support system that helps you choose between options using 
 
 ## What It Does
 
-Given a set of options (currently laptops) and a set of weighted criteria, the system:
+Given a set of options and weighted criteria, the system:
 
 1. **Normalises** every raw spec to a 0–10 scale (min-max normalisation)
 2. **Scores** each option as a weighted sum of normalised values
@@ -21,7 +21,7 @@ cd decision-companion
 # (Optional) activate your virtual environment
 source venv/bin/activate
 
-# Default run — Price 40%, Performance 30%, Battery 20%, Weight 10%
+# Default laptop comparison — Price 40%, Performance 30%, Battery 20%, Weight 10%
 python3 main.py
 
 # With sensitivity analysis
@@ -33,6 +33,24 @@ python3 main.py --weights 0.2 0.5 0.2 0.1
 # Help
 python3 main.py --help
 ```
+
+### Interactive Mode — Compare Anything
+
+Use `--interactive` (or `-i`) to compare **any type of option** — cars, phones, apartments, job offers, universities, etc. You define your own criteria and enter your own options:
+
+```bash
+# Interactive mode — you define everything
+python3 main.py --interactive
+
+# Interactive mode + sensitivity analysis
+python3 main.py --interactive --sensitivity
+```
+
+The interactive mode walks you through:
+1. **What you're comparing** (e.g. "cars")
+2. **Your criteria** — name, direction (higher/lower is better), unit, weight
+3. **Your options** — enter a value for each criterion per option
+4. **Results** — full ranking, explanations, and optional sensitivity analysis
 
 ## Algorithm
 
@@ -60,14 +78,15 @@ Score(option) = Σ (normalised_score[criterion] × criterion.weight)
 
 ```
 decision_companion/
-├── main.py                  # CLI entry point
+├── main.py                  # CLI entry point (default + interactive modes)
 ├── decision_engine.py       # Weighted scoring + ranking pipeline
 ├── explanation_engine.py    # Algorithmic explanation generation
 ├── normalizer.py            # Min-max normalisation
 ├── sensitivity_analysis.py  # Standout feature — robustness testing
-├── models.py                # Criteria, Laptop, ScoredLaptop dataclasses
+├── models.py                # Criteria, Laptop, Option, ScoredOption dataclasses
 ├── data/
-│   └── laptops.json         # Laptop dataset (6 options)
+│   └── laptops.json         # Default laptop dataset (6 options)
+├── .gitignore
 ├── README.md
 ├── BUILD_PROCESS.md         # Engineering process journal
 └── RESEARCH_LOG.md          # Research & decision log
@@ -112,11 +131,23 @@ Tipping Points (smallest weight shift to flip the winner):
 - **Explainability first**: Every score is fully decomposable — you can trace exactly why any option ranked anywhere.
 - **Transparency over simplicity**: The sensitivity analysis is there specifically to show when you _shouldn't_ be confident in the result.
 
-## Extending to Other Domains
+## Interactive Mode Example (Cars)
 
-The system is domain-agnostic. To evaluate a different type of option (cars, job offers, apartments):
+```bash
+python3 main.py --interactive
+```
 
-1. Add a new JSON file in `data/`
-2. Create a new dataclass in `models.py` (or reuse `Laptop` with renamed fields)
-3. Define a new criteria list in `decision_engine.py`
-4. Run — everything else works automatically
+```
+What are you comparing? cars
+
+Criterion 1/3: Price     — weight 40%, ↓ lower is better
+Criterion 2/3: Fuel Efficiency — weight 35%, ↑ higher is better
+Criterion 3/3: Horsepower    — weight 25%, ↑ higher is better
+
+Ranked Results:
+🥇 1  Honda Civic      — 7.500/10  (best price + fuel efficiency)
+🥈 2  Toyota Camry     — 6.021/10  (balanced across all criteria)
+🥉 3  BMW 3 Series     — 2.500/10  (best horsepower, but most expensive)
+```
+
+Works for any domain — just define your criteria and enter your options.
