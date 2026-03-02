@@ -1,6 +1,50 @@
 # Research Log — Decision Companion
 
-This log captures every research question and development conversation that shaped the project, in chronological order. Each entry documents *what was discussed*, *what was decided*, and *why*.
+This log captures every research question, AI interaction, and development conversation that shaped the project. Each entry documents *what was discussed*, *what was decided*, and *why*.
+
+---
+
+## AI Tool Usage — Transparency
+
+**Tool used**: Google Gemini (AI coding assistant) — used for pair-programming, code generation, research, and documentation.
+
+**How AI was used**: As a collaborative development partner. I directed the architecture, design decisions, and feature scope. AI assisted with code implementation, debugging, and documentation drafting.
+
+### Prompts and Outcomes
+
+| # | Prompt / Request | AI Output | Accepted / Modified / Rejected | Reasoning |
+|---|---|---|---|---|
+| 1 | "Build a Decision Companion System using weighted scoring" | Generated project structure with separate modules | ✅ Accepted | Clean separation of concerns matched my architecture goals |
+| 2 | "Which MCDA method should I use?" | Compared SAW, TOPSIS, AHP, ELECTRE with trade-off table | ✅ Accepted (SAW) | SAW offers the best transparency-to-complexity ratio for this use case |
+| 3 | "Implement min-max normalization" | Generated normalizer with higher/lower direction support | ✅ Accepted with modification | Added the range=0 edge case handling (all values get 10.0) after discussion |
+| 4 | "What if all values are the same for a criterion?" | Suggested assigning 5.0 (neutral) | ❌ Rejected | Decided 10.0 is fairer — no option should be penalised when nothing differentiates them |
+| 5 | "Generate explanation engine" | Created algorithmic explanation with breakdown, strengths, weaknesses, verdict | ✅ Accepted with modification | Adjusted threshold values (7.0 for strengths, 3.0 for weaknesses) through iteration |
+| 6 | "Add sensitivity analysis" | Initially generated it inline in main.py (~90 lines) | ✅ Accepted then refactored | Worked functionally but violated SRP — extracted to its own module afterward |
+| 7 | "Can it work for all options, not just laptops?" | Suggested adding generic Option/ScoredOption dataclasses + interactive CLI | ✅ Accepted | This was the key extensibility feature; design felt right |
+| 8 | "Should I remove the Laptop-specific code?" | Suggested keeping both Laptop and Option paths | ✅ Accepted | Preserves the focused demo (laptops) while showing extensibility (interactive mode) |
+| 9 | "Deploy using Streamlit" | Generated full streamlit_app.py with both modes, sliders, expandable cards | ✅ Accepted with modification | Adjusted styling, removed some unnecessary complexity in the interactive mode UI |
+| 10 | "Add mistakes and corrections to BUILD_PROCESS" | Listed 4 real development mistakes from our conversation | ✅ Accepted | These were genuine mistakes (pycache committed, docs lagging, etc.) — added authenticity |
+
+### What I specifically directed (not AI-generated):
+
+- **Choice of weighted scoring (SAW)** over more complex methods — my decision based on explainability requirements
+- **Sensitivity analysis as the standout feature** — I identified robustness testing as the differentiator
+- **Domain-agnostic interactive mode** — I requested this after seeing the initial laptop-only version
+- **Edge case decisions** (range=0 → 10.0, weight validation tolerance of 1e-6)
+- **All documentation structure and narrative** — I reviewed and directed the content of README, BUILD_PROCESS, and RESEARCH_LOG
+- **Deployment strategy** — I chose Streamlit Cloud after evaluating the options table
+
+### Google Searches / External References
+
+| Query | Source | Used for |
+|---|---|---|
+| "MCDA methods comparison SAW TOPSIS AHP" | Triantaphyllou (2000), various MCDA papers | Selecting the scoring algorithm |
+| "min-max vs z-score normalization" | Data science literature | Choosing the normalization approach |
+| "laptop benchmark Cinebench R23 scores 2024" | Notebookcheck, The Verge | Building the laptop dataset |
+| "consumer laptop purchase priorities" | Gartner 2023, Statista | Grounding default weight choices |
+| "sensitivity analysis MCDA proportional redistribution" | MCDA literature | Designing the weight-shift methodology |
+| "Python ANSI escape codes terminal colors" | Stack Overflow, Python docs | CLI colored output without dependencies |
+| "Streamlit deployment from GitHub" | Streamlit documentation | Deploying the web app |
 
 ---
 
