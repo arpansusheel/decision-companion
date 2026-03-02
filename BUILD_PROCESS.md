@@ -184,9 +184,38 @@ Real engineering involves iteration. Here are the mistakes made during the build
 
 **Lesson**: Living documents need to stay alive. If you add a major feature, update all documentation — not just the user-facing README.
 
+---
+
+### Step 10: Streamlit Web Deployment
+
+**Trigger**: The CLI works perfectly, but sharing it requires the other person to have Python installed and use a terminal. For evaluators or non-technical users, a live web link is far more accessible.
+
+**Why Streamlit over alternatives**:
+
+| Option | Speed to deploy | Hosting cost | Requires code changes? |
+|---|---|---|---|
+| **Streamlit Cloud** | ~5 min | Free | Yes — new `streamlit_app.py` |
+| Flask/FastAPI | ~30 min | Paid (Render/Railway) | Yes — full web framework |
+| Docker | ~20 min | Need server | No — wraps CLI |
+| PyPI | ~30 min | Free | Yes — setup.py packaging |
+
+**Decision**: Streamlit Cloud — fastest path from "working CLI" to "live web URL". Free, deploys from GitHub, auto-installs dependencies from `requirements.txt`.
+
+**What was built**:
+- `streamlit_app.py`: Full web UI with gradient styling, weight sliders, expandable explanations, sensitivity toggle
+- `requirements.txt`: Single dependency (`streamlit`)
+- Supports both Default (laptops) and Interactive (anything) modes via sidebar toggle
+
+**Tested locally**: Verified at `localhost:8501` — rankings, explanations, score bars all rendering correctly.
+
+---
+
 ## Git Commit History
 
 ```
+65c5144  feat: add Streamlit web interface for browser-based deployment
+71b73a9  docs: add Mistakes & Corrections section, dynamic/explainable sections in README
+da8d156  docs: update BUILD_PROCESS and RESEARCH_LOG with full development conversations
 74906da  docs: update README and BUILD_PROCESS for interactive mode
 63f156e  chore: add .gitignore and remove cached pycache files
 ad6ea67  feat: add fully interactive mode — compare ANY options with custom criteria
@@ -204,7 +233,8 @@ d4aa3f5  project initialization: folder structure and empty files
 
 ## What I Would Do Next
 
-- Add a `--delta` CLI flag to customise the sensitivity shift magnitude
 - Write pytest unit tests for the normalizer edge cases and weight validation
 - Add `--export json` to save results to a file for dashboarding
 - Support loading custom options from JSON files (`--data custom.json`)
+- Add a `--delta` CLI flag to customise the sensitivity shift magnitude
+

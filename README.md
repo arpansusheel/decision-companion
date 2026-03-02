@@ -74,23 +74,8 @@ Score(option) = Σ (normalised_score[criterion] × criterion.weight)
 | Battery Life | `battery_hours` | 20% | Higher is better |
 | Weight | `weight_kg` | 10% | Lower is better |
 
-## Project Structure
 
-```
-decision_companion/
-├── main.py                  # CLI entry point (default + interactive modes)
-├── decision_engine.py       # Weighted scoring + ranking pipeline
-├── explanation_engine.py    # Algorithmic explanation generation
-├── normalizer.py            # Min-max normalisation
-├── sensitivity_analysis.py  # Standout feature — robustness testing
-├── models.py                # Criteria, Laptop, Option, ScoredOption dataclasses
-├── data/
-│   └── laptops.json         # Default laptop dataset (6 options)
-├── .gitignore
-├── README.md
-├── BUILD_PROCESS.md         # Engineering process journal
-└── RESEARCH_LOG.md          # Research & decision log
-```
+
 
 ## Sensitivity Analysis
 
@@ -187,3 +172,41 @@ Ranked Results:
 ```
 
 Works for any domain — just define your criteria and enter your options.
+
+## 🌐 Live Demo (Streamlit)
+
+The project is also deployed as a **web app** — no installation needed:
+
+🔗 **[decision-companion.streamlit.app](https://decision-companion.streamlit.app)**
+
+Or run locally:
+```bash
+pip install streamlit
+streamlit run streamlit_app.py
+```
+
+Features in the web version:
+- **Interactive weight sliders** — drag to adjust priorities and see rankings update live
+- **Expandable explanations** — click any option to see full score breakdown
+- **Sensitivity analysis toggle** — one checkbox to run robustness testing
+- **Both modes** — Default (laptops) and Interactive (anything) via sidebar
+
+## Project Structure
+
+```
+decision-companion/
+├── main.py                  # CLI entry point (default + interactive modes)
+├── streamlit_app.py         # Web interface (Streamlit deployment)
+├── decision_engine.py       # Weighted scoring + ranking pipeline
+├── explanation_engine.py    # Algorithmic explanation generation
+├── normalizer.py            # Min-max normalisation
+├── sensitivity_analysis.py  # Standout feature — robustness testing
+├── models.py                # Criteria, Laptop, Option, ScoredOption dataclasses
+├── data/
+│   └── laptops.json         # Default laptop dataset (6 options)
+├── requirements.txt         # Streamlit dependency for deployment
+├── .gitignore
+├── README.md
+├── BUILD_PROCESS.md         # Engineering process journal
+└── RESEARCH_LOG.md          # Research & decision log
+```

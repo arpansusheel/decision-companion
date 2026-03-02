@@ -180,6 +180,29 @@ This was the turning point — the system needed to go from "a laptop comparison
 
 ---
 
+## Entry 9 — Deployment: CLI to Live Web App
+
+**Context**: The CLI was fully functional but required Python and a terminal to use. The question was: *"how can I deploy this easily and very fast?"*
+
+**Conversation**: Evaluated 5 deployment options:
+
+| Option | Speed | Cost | Verdict |
+|---|---|---|---|
+| GitHub (already done) | ✅ Done | Free | Requires user to clone + install |
+| **Streamlit Cloud** | **~5 min** | **Free** | **Best — live URL, no server** |
+| Docker | ~20 min | Need server | Overkill for a demo |
+| PyPI | ~30 min | Free | CLI-only, no visual demo |
+| Flask/FastAPI | ~30 min | Paid hosting | Full framework, too much work |
+
+**Decision**: Streamlit Cloud — it connects directly to the GitHub repo, auto-installs from `requirements.txt`, and provides a free live URL. The web UI preserves all the algorithmic transparency of the CLI:
+- Interactive weight sliders replace `--weights` CLI args
+- Expandable cards replace terminal output
+- Sidebar toggle replaces `--interactive` and `--sensitivity` flags
+
+**Key design choice**: The Streamlit app imports the same core modules (`decision_engine.py`, `normalizer.py`, etc.) — no logic was duplicated. The web UI is purely a rendering layer on top of the same algorithmic pipeline.
+
+---
+
 ## Summary of Key Conversations
 
 | # | Question | Decision |
@@ -189,6 +212,8 @@ This was the turning point — the system needed to go from "a laptop comparison
 | 3 | Default weights? | Price 40%, Perf 30%, Battery 20%, Weight 10% — grounded in consumer research |
 | 4 | Performance metric? | Cinebench R23 — widely published, architecture-neutral |
 | 5 | Sensitivity approach? | Proportional redistribution — maintains weight invariant |
-| 6 | External deps? | Zero — stdlib only, algorithmic focus |
+| 6 | External deps? | Zero for CLI — stdlib only, algorithmic focus |
 | 7 | Domain-agnostic? | Interactive CLI mode — user defines everything at runtime |
 | 8 | Documentation style? | Three docs with distinct purposes — transparency over polish |
+| 9 | Deployment? | Streamlit Cloud — fastest path from CLI to live web URL |
+
