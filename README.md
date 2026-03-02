@@ -177,7 +177,7 @@ Works for any domain — just define your criteria and enter your options.
 
 The project is also deployed as a **web app** — no installation needed:
 
-🔗 **[decision-companion.streamlit.app](https://decision-companion.streamlit.app)**
+🔗 **[Live Demo on Streamlit](https://decision-companion-9qfqfnkhpridoueciv76sb.streamlit.app/)**
 
 Or run locally:
 ```bash
