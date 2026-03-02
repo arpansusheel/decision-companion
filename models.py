@@ -120,3 +120,53 @@ class ScoredLaptop:
     def compute_total(self) -> None:
         """Recalculate total_score from current weighted_scores."""
         self.total_score = sum(self.weighted_scores.values())
+
+
+@dataclass
+class Option:
+    """
+    A generic decision option — works for any domain (laptops, cars, phones,
+    apartments, etc.).
+
+    Attributes:
+        name:    Display name for this option.
+        values:  Dict mapping criteria key → raw numeric value.
+    """
+
+    name: str
+    values: dict  # {criteria_key: float}
+
+    def get_raw_value(self, key: str) -> float:
+        """Return the raw value for a given criteria key."""
+        if key not in self.values:
+            raise KeyError(
+                f"Option '{self.name}' has no value for key '{key}'. "
+                f"Available keys: {list(self.values.keys())}"
+            )
+        return float(self.values[key])
+
+    def to_dict(self) -> dict:
+        return {"name": self.name, **self.values}
+
+
+@dataclass
+class ScoredOption:
+    """
+    A generic Option after normalization and weighted scoring.
+    Same structure as ScoredLaptop but works with any Option.
+    """
+
+    option: Option
+    normalized_scores: dict = field(default_factory=dict)
+    weighted_scores: dict = field(default_factory=dict)
+    total_score: float = 0.0
+    rank: int = 0
+
+    @property
+    def name(self) -> str:
+        return self.option.name
+
+    def compute_total(self) -> None:
+        """Recalculate total_score from current weighted_scores."""
+        self.total_score = sum(self.weighted_scores.values())
+

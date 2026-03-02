@@ -21,8 +21,15 @@ Output:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from models import Criteria, Laptop, ScoredLaptop
-from decision_engine import score_and_rank
+from models import Criteria, Laptop, ScoredLaptop, Option, ScoredOption
+from decision_engine import score_and_rank, score_and_rank_options
+
+
+def _run_scoring(items, criteria):
+    """Auto-detect item type and call the correct scoring function."""
+    if items and isinstance(items[0], Option):
+        return score_and_rank_options(items, criteria)
+    return score_and_rank(items, criteria)
 
 
 # ---------------------------------------------------------------------------
@@ -37,7 +44,7 @@ class Scenario:
     direction: str             # "increased" or "decreased"
     delta: float               # Magnitude of the weight shift (e.g. 0.10)
     adjusted_weights: dict     # {criterion_name: new_weight}
-    ranked: list[ScoredLaptop] = field(default_factory=list)
+    ranked: list = field(default_factory=list)  # list[ScoredLaptop] or list[ScoredOption]
     winner_changed: bool = False
     new_winner: str = ""
 
@@ -98,23 +105,16 @@ def _scale_other_weights(
 
 
 def run_sensitivity(
-    laptops: list[Laptop],
+    items,
     criteria: list[Criteria],
     delta: float = 0.10,
 ) -> SensitivityReport:
     """
     Run the full sensitivity analysis.
-
-    Args:
-        laptops:  List of Laptop objects.
-        criteria: Base criteria with weights summing to 1.0.
-        delta:    Weight shift magnitude (default 0.10 = 10 percentage points).
-
-    Returns:
-        SensitivityReport with all scenarios and derived statistics.
+    Accepts either list[Laptop] or list[Option].
     """
     # Baseline
-    base_ranked, _ = score_and_rank(laptops, criteria)
+    base_ranked, _ = _run_scoring(items, criteria)
     base_winner = base_ranked[0].name
     base_ranking = [sl.name for sl in base_ranked]
 
@@ -132,7 +132,7 @@ def run_sensitivity(
                 continue
 
             try:
-                new_ranked, _ = score_and_rank(laptops, adjusted)
+                new_ranked, _ = _run_scoring(items, adjusted)
             except ValueError:
                 continue
 
@@ -153,7 +153,7 @@ def run_sensitivity(
     stability_score = stable / len(scenarios) if scenarios else 1.0
 
     # Tipping-point search (binary search per criterion)
-    tipping_points = _find_tipping_points(laptops, criteria, base_winner)
+    tipping_points = _find_tipping_points(items, criteria, base_winner)
 
     # Rank-shift matrix
     rank_shift_matrix = _build_rank_shift_matrix(base_ranking, scenarios)
@@ -169,7 +169,7 @@ def run_sensitivity(
 
 
 def _find_tipping_points(
-    laptops: list[Laptop],
+    items,
     criteria: list[Criteria],
     base_winner: str,
     precision: float = 0.01,
@@ -199,7 +199,7 @@ def _find_tipping_points(
                 if adj is None:
                     break
                 try:
-                    new_ranked, _ = score_and_rank(laptops, adj)
+                    new_ranked, _ = _run_scoring(items, adj)
                     if new_ranked[0].name != base_winner:
                         flip_at = d
                         break

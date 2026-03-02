@@ -15,8 +15,8 @@ Algorithm:
 import json
 from pathlib import Path
 
-from models import Criteria, Laptop, ScoredLaptop
-from normalizer import normalize, get_normalization_details
+from models import Criteria, Laptop, ScoredLaptop, Option, ScoredOption
+from normalizer import normalize, normalize_options, get_normalization_details
 
 
 # ---------------------------------------------------------------------------
@@ -60,16 +60,6 @@ DATA_PATH = Path(__file__).parent / "data" / "laptops.json"
 def load_laptops(path: Path = DATA_PATH) -> list[Laptop]:
     """
     Load and validate laptop data from a JSON file.
-
-    Args:
-        path: Path to the JSON file containing a "laptops" array.
-
-    Returns:
-        List of validated Laptop objects.
-
-    Raises:
-        FileNotFoundError: If the data file does not exist.
-        KeyError: If the JSON is missing required fields.
     """
     if not path.exists():
         raise FileNotFoundError(f"Laptop data not found at: {path}")
@@ -97,39 +87,53 @@ def score_and_rank(
     criteria: list[Criteria] | None = None,
 ) -> tuple[list[ScoredLaptop], dict]:
     """
-    Run the full decision pipeline: normalize → weight → rank.
-
-    Args:
-        laptops:  List of Laptop objects to evaluate.
-        criteria: Criteria to use. Defaults to DEFAULT_CRITERIA.
-
-    Returns:
-        A tuple of:
-          - ranked: List of ScoredLaptop, sorted best → worst (rank 1 = best).
-          - norm_details: Per-criterion normalization metadata (for explanation engine).
+    Run the full decision pipeline for laptops: normalize → weight → rank.
     """
     if criteria is None:
         criteria = DEFAULT_CRITERIA
 
     _validate_weights(criteria)
 
-    # Step 1 — Normalize raw values to 0–10 scale
     scored = normalize(laptops, criteria)
 
-    # Step 2 — Compute weighted scores for each laptop
     for sl in scored:
         for criterion in criteria:
             norm = sl.normalized_scores[criterion.key]
             sl.weighted_scores[criterion.key] = round(norm * criterion.weight, 4)
         sl.compute_total()
 
-    # Step 3 — Sort descending by total score, assign ranks
     scored.sort(key=lambda sl: sl.total_score, reverse=True)
     for rank, sl in enumerate(scored, start=1):
         sl.rank = rank
 
-    # Normalization metadata used by the explanation engine
     norm_details = get_normalization_details(laptops, criteria)
+
+    return scored, norm_details
+
+
+def score_and_rank_options(
+    options: list[Option],
+    criteria: list[Criteria],
+) -> tuple[list[ScoredOption], dict]:
+    """
+    Run the full decision pipeline for generic options: normalize → weight → rank.
+    Works for any domain — laptops, cars, phones, apartments, etc.
+    """
+    _validate_weights(criteria)
+
+    scored = normalize_options(options, criteria)
+
+    for so in scored:
+        for criterion in criteria:
+            norm = so.normalized_scores[criterion.key]
+            so.weighted_scores[criterion.key] = round(norm * criterion.weight, 4)
+        so.compute_total()
+
+    scored.sort(key=lambda so: so.total_score, reverse=True)
+    for rank, so in enumerate(scored, start=1):
+        so.rank = rank
+
+    norm_details = get_normalization_details(options, criteria)
 
     return scored, norm_details
 
