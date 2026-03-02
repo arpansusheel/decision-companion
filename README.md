@@ -131,6 +131,42 @@ Tipping Points (smallest weight shift to flip the winner):
 - **Explainability first**: Every score is fully decomposable — you can trace exactly why any option ranked anywhere.
 - **Transparency over simplicity**: The sensitivity analysis is there specifically to show when you _shouldn't_ be confident in the result.
 
+## Dynamic, Not Hardcoded
+
+This system is **not static**. Users control every input and get different outcomes based on their choices:
+
+| Method | What the user controls | Command |
+|---|---|---|
+| **Custom weights** | Change how much each criterion matters | `python3 main.py --weights 0.1 0.6 0.2 0.1` |
+| **Interactive mode** | Define own criteria, options, and values from scratch | `python3 main.py --interactive` |
+| **Sensitivity analysis** | See how outcomes shift when priorities change | `python3 main.py --sensitivity` |
+
+**Example**: With default weights (Price 40%), the budget Acer Swift 3 wins. Run `--weights 0.1 0.5 0.2 0.2` (Performance 50%), and the high-performance ASUS ROG Zephyrus jumps to #1. Different inputs → different outcomes, every time.
+
+In interactive mode, users can compare **any category** — cars, phones, apartments, job offers — with their own criteria and values. Nothing is hardcoded.
+
+## Fully Explainable — Not a Black Box
+
+Every number is **traceable and verifiable by hand**. For each option, the system shows:
+
+```
+• Price (40%): $699 [↓ lower is better] → 10.00/10 (excellent) → weighted 4.000 pts
+```
+
+That one line exposes the entire calculation chain:
+1. **Raw value** ($699) — what the option actually has
+2. **Direction** (↓ lower is better) — how this criterion is evaluated
+3. **Normalised score** (10.00/10) — computed from the min-max formula
+4. **Adjective label** (excellent) — human-readable interpretation
+5. **Weighted contribution** (4.000 pts) — normalised score × criterion weight
+
+A user can verify by hand:
+- Min price = $699, Max price = $1,599
+- `(1599 − 699) / (1599 − 699) × 10 = 10.0 ✓`
+- `10.0 × 0.40 = 4.0 ✓`
+
+**There is no AI, no LLM, and no neural network anywhere in the scoring or explanation pipeline.** It is pure arithmetic — transparent and auditable from start to finish.
+
 ## Interactive Mode Example (Cars)
 
 ```bash

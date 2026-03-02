@@ -142,6 +142,48 @@ Most decision-support tools give you a recommendation. Good decision-support tel
 
 ---
 
+## Mistakes and Corrections
+
+Real engineering involves iteration. Here are the mistakes made during the build and how each was corrected:
+
+### Mistake 1: Sensitivity analysis was inline in `main.py`
+
+**What happened**: The sensitivity analysis was initially written as a ~90-line function directly inside `main.py`. It worked, but it violated the single-responsibility principle — `main.py` was now doing CLI rendering, argument parsing, *and* statistical analysis.
+
+**Correction**: Extracted the entire sensitivity analysis into its own `sensitivity_analysis.py` module with proper dataclasses (`Scenario`, `SensitivityReport`), a `run_sensitivity()` function, and a `format_report()` renderer. `main.py` went from 90 lines of inline analysis to a single delegate call.
+
+**Lesson**: It's tempting to keep things in one file while prototyping, but extracting early leads to cleaner code and easier testing.
+
+---
+
+### Mistake 2: `__pycache__` committed to git
+
+**What happened**: When committing the interactive mode changes, Python's `__pycache__/` directory (containing `.pyc` bytecode files) was accidentally included in the commit. These are auto-generated build artifacts that shouldn't be in version control.
+
+**Correction**: Added a `.gitignore` file with standard Python exclusions (`__pycache__/`, `*.pyc`, `venv/`, etc.) and ran `git rm -r --cached __pycache__/` to remove the cached files from the repo.
+
+**Lesson**: Always create `.gitignore` at project initialisation, not after the first accidental commit.
+
+---
+
+### Mistake 3: README not updated after interactive mode
+
+**What happened**: The README was written on Day 3 when the system was laptop-only. After adding the interactive mode (`--interactive`), the README still said "Given a set of options (currently laptops)" and the "Extending to Other Domains" section told users to manually edit JSON files and Python code — even though the interactive mode had made that unnecessary.
+
+**Correction**: Updated the README with an "Interactive Mode — Compare Anything" section, a cars comparison example, and replaced the old extension instructions with interactive mode documentation.
+
+**Lesson**: Documentation must be updated alongside code, not after. A README that describes capabilities the system doesn't have (or misses capabilities it does) is misleading.
+
+---
+
+### Mistake 4: BUILD_PROCESS and RESEARCH_LOG fell behind
+
+**What happened**: After adding the interactive mode and updating the README, both the BUILD_PROCESS and RESEARCH_LOG were still describing only the Day 1–3 work. The interactive mode design conversation, the domain-agnostic architecture decisions, and the development chat history were missing.
+
+**Correction**: Added Step 9 (interactive mode) to BUILD_PROCESS with full design rationale, and rewrote RESEARCH_LOG to capture the actual development conversations (8 entries total) rather than just polished conclusions.
+
+**Lesson**: Living documents need to stay alive. If you add a major feature, update all documentation — not just the user-facing README.
+
 ## Git Commit History
 
 ```
