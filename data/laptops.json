@@ -1,0 +1,52 @@
+{
+  "laptops": [
+    {
+      "name": "Apple MacBook Air M2",
+      "brand": "Apple",
+      "price_usd": 1099,
+      "performance": 8820,
+      "battery_hours": 18.0,
+      "weight_kg": 1.24
+    },
+    {
+      "name": "Apple MacBook Pro M3",
+      "brand": "Apple",
+      "price_usd": 1599,
+      "performance": 15100,
+      "battery_hours": 22.0,
+      "weight_kg": 1.55
+    },
+    {
+      "name": "Dell XPS 15",
+      "brand": "Dell",
+      "price_usd": 1399,
+      "performance": 12450,
+      "battery_hours": 9.5,
+      "weight_kg": 1.86
+    },
+    {
+      "name": "Lenovo ThinkPad X1 Carbon",
+      "brand": "Lenovo",
+      "price_usd": 1279,
+      "performance": 9800,
+      "battery_hours": 15.0,
+      "weight_kg": 1.12
+    },
+    {
+      "name": "ASUS ROG Zephyrus G14",
+      "brand": "ASUS",
+      "price_usd": 1449,
+      "performance": 18200,
+      "battery_hours": 10.0,
+      "weight_kg": 1.65
+    },
+    {
+      "name": "Acer Swift 3",
+      "brand": "Acer",
+      "price_usd": 699,
+      "performance": 6500,
+      "battery_hours": 12.0,
+      "weight_kg": 1.35
+    }
+  ]
+}
