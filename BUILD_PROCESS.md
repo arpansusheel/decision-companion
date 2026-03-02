@@ -116,9 +116,53 @@ Most decision-support tools give you a recommendation. Good decision-support tel
 
 ---
 
+### Step 9: Interactive Mode — Domain-Agnostic Extension
+
+**Trigger**: After the default laptop pipeline was working, the question came up: *"Can it work for all options and according to the options that the user gives?"* — meaning the system should not be locked to laptops.
+
+**Design approach**: Rather than forcing users to edit JSON files and Python code, I built a fully interactive CLI mode (`--interactive` / `-i`) where users define everything at runtime:
+
+1. **Category**: User names what they're comparing (cars, phones, apartments, etc.)
+2. **Criteria**: User defines each criterion — name, direction (h/l), unit, weight
+3. **Options**: User enters each option with a value per criterion
+4. Full pipeline runs on the user-defined input
+
+**Implementation changes required**:
+- `models.py`: Added generic `Option` (name + dynamic values dict) and `ScoredOption` dataclasses alongside the existing `Laptop`/`ScoredLaptop` — kept both to avoid breaking the default mode
+- `normalizer.py`: Added `normalize_options()` for generic types
+- `decision_engine.py`: Added `score_and_rank_options()` for generic types
+- `sensitivity_analysis.py`: Added `_run_scoring()` auto-detection — checks `isinstance(items[0], Option)` to route to the correct scoring function
+- `main.py`: Added `run_interactive()` with guided prompts, input validation, and the `_explain_generic()` adapter for explanation generation
+
+**Alternative considered**: Making everything generic-only and removing the Laptop-specific code. Rejected because:
+- The default laptop mode is the primary demo for the evaluation
+- Having both modes shows extensibility without sacrificing the focused demonstration
+
+**Tested with**: Cars comparison (Price 40%, Fuel Efficiency 35%, Horsepower 25%) with Toyota Camry, Honda Civic, BMW 3 Series — Honda Civic ranked #1 at 7.5/10.
+
+---
+
+## Git Commit History
+
+```
+74906da  docs: update README and BUILD_PROCESS for interactive mode
+63f156e  chore: add .gitignore and remove cached pycache files
+ad6ea67  feat: add fully interactive mode — compare ANY options with custom criteria
+b4c3ceb  docs: add README, BUILD_PROCESS, and RESEARCH_LOG
+0c6171c  feat: extract sensitivity analysis into standalone module
+a67e2cc  feat: add explanation engine and CLI entry point
+294db2f  feat: implement weighted scoring engine with full pipeline
+777792c  feat: implement min-max normalizer (0-10 scale, direction-aware)
+08cbf43  data: add 6-laptop dataset covering budget to premium tier
+39f2250  feat: add Criteria, Laptop, ScoredLaptop dataclasses with full validation
+d4aa3f5  project initialization: folder structure and empty files
+```
+
+---
+
 ## What I Would Do Next
 
 - Add a `--delta` CLI flag to customise the sensitivity shift magnitude
 - Write pytest unit tests for the normalizer edge cases and weight validation
-- Support additional domains (cars, apartments) via a plugin-style data loader
-- Export results to JSON for downstream use or dashboarding
+- Add `--export json` to save results to a file for dashboarding
+- Support loading custom options from JSON files (`--data custom.json`)
