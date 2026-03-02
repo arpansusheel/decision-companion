@@ -19,6 +19,7 @@ import sys
 from decision_engine import DEFAULT_CRITERIA, load_laptops, score_and_rank
 from explanation_engine import explain_ranking
 from models import Criteria
+from sensitivity_analysis import run_sensitivity, format_report
 
 
 # ---------------------------------------------------------------------------
@@ -97,94 +98,10 @@ def print_explanations(explanations: list[dict]) -> None:
         print(f"\n  {'·' * 68}")
 
 
-def print_sensitivity_analysis(laptops, criteria, norm_details) -> None:
-    """
-    Sensitivity analysis: vary each criterion's weight ±10 percentage points
-    and show whether the winner changes.
-
-    For each criterion C:
-      - Increase C's weight by 0.10, redistribute the remainder proportionally.
-      - Re-run scoring and check if the top-ranked laptop changes.
-    """
-    _header("SENSITIVITY ANALYSIS")
-    print(
-        f"\n  {DIM}Testing how ±10% weight shifts on each criterion affect the winner.{RESET}\n"
-    )
-
-    base_winner = score_and_rank(laptops, criteria)[0][0].name
-
-    DELTA = 0.10
-    scenarios = []
-
-    for i, focal in enumerate(criteria):
-        for direction, delta in [("increased", +DELTA), ("decreased", -DELTA)]:
-            new_weight = focal.weight + delta
-
-            # Skip if the new weight is out of bounds
-            if new_weight <= 0 or new_weight >= 1.0:
-                continue
-
-            # Scale remaining criteria proportionally so weights sum to 1.0
-            remaining_budget = 1.0 - new_weight
-            other_total = sum(c.weight for j, c in enumerate(criteria) if j != i)
-
-            adjusted: list[Criteria] = []
-            for j, c in enumerate(criteria):
-                if j == i:
-                    adjusted.append(
-                        Criteria(c.name, c.key, round(new_weight, 4), c.direction, c.unit)
-                    )
-                else:
-                    scaled = round(c.weight / other_total * remaining_budget, 4)
-                    adjusted.append(
-                        Criteria(c.name, c.key, scaled, c.direction, c.unit)
-                    )
-
-            try:
-                new_ranked, _ = score_and_rank(laptops, adjusted)
-                new_winner = new_ranked[0].name
-                changed = new_winner != base_winner
-                scenarios.append(
-                    {
-                        "criterion": focal.name,
-                        "direction": direction,
-                        "new_weight": new_weight,
-                        "new_winner": new_winner,
-                        "changed": changed,
-                    }
-                )
-            except ValueError:
-                continue
-
-    # Print results
-    print(
-        f"  {'Criterion':<18} {'Change':<12} {'New Weight':>12}  {'Winner':<34} {'Stable?'}"
-    )
-    print(f"  {'─' * 82}")
-
-    for s in scenarios:
-        changed_str = f"{RED}⚠ Changed → {s['new_winner']}{RESET}" if s["changed"] else f"{GREEN}✓ Same{RESET}"
-        stability = f"{RED}NO{RESET}" if s["changed"] else f"{GREEN}YES{RESET}"
-        print(
-            f"  {s['criterion']:<18} {s['direction']:<12} {s['new_weight']:>10.0%}"
-            f"  {s['new_winner']:<34} {stability}"
-        )
-        if s["changed"]:
-            print(f"    {changed_str}")
-
-    stable_count = sum(1 for s in scenarios if not s["changed"])
-    total = len(scenarios)
-    pct = stable_count / total * 100 if total else 0
-    print(
-        f"\n  {BOLD}Stability Summary:{RESET} "
-        f"Winner unchanged in {stable_count}/{total} scenarios ({pct:.0f}%)."
-    )
-    if pct == 100:
-        print(f"  {GREEN}✓ The ranking is highly robust to weight changes.{RESET}")
-    elif pct >= 60:
-        print(f"  {YELLOW}~ The ranking is moderately sensitive to weight changes.{RESET}")
-    else:
-        print(f"  {RED}! The ranking is highly sensitive — results depend heavily on weights.{RESET}")
+def print_sensitivity_analysis(laptops, criteria) -> None:
+    """Run sensitivity analysis via the dedicated module and print the report."""
+    report = run_sensitivity(laptops, criteria)
+    print(format_report(report, criteria))
 
 
 # ---------------------------------------------------------------------------
@@ -269,7 +186,7 @@ def main() -> None:
 
     # Sensitivity analysis (optional)
     if args.sensitivity:
-        print_sensitivity_analysis(laptops, criteria, norm_details)
+        print_sensitivity_analysis(laptops, criteria)
 
     _header("RECOMMENDATION")
     winner_exp = explanations[0]
